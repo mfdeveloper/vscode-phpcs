@@ -56,6 +56,7 @@ class PhpcsServer {
 		warningSeverity: 5,
 		errorSeverity: 5,
 		stdin: true,
+		pathMappings: null
 	};
 	private documentSettings: Map<string, Promise<PhpcsSettings>> = new Map();
 

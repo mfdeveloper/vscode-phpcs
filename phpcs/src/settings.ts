@@ -17,4 +17,5 @@ export interface PhpcsSettings {
 	warningSeverity: number;
 	errorSeverity: number;
 	stdin: boolean;
+	pathMappings?: {[key: string]: string} | null;
 }

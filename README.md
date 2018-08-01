@@ -32,3 +32,8 @@ To run the development version of the `phpcs` extension:
 This will launch a new VS Code window named `Extension Development Host`, automatically using the development version of the `phpcs` extension.
 
 > If you don't have an open php file on your `Extension Development Host` the server debug session will timeout and you will need to relaunch it from the debug panel.
+
+### Known debug problems
+
+> If you got a error from `phpcs-server` launch configuration listening on port **6199**, try to run: `npm run watch:server` from the root repository folder.
+After that, if you got a `ENOSPC` error, try this fix: [Node.JS Error: ENOSPC](https://stackoverflow.com/questions/22475849/node-js-error-enospc)

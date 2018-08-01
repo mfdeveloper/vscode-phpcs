@@ -221,6 +221,12 @@ This setting allows you to override the path to your composer.json file when it 
 
 This setting allows you to add or remove the `phpcs --stdin-path` flag (supported only for versions 2.6.0 and above).
 
+### **phpcs.pathMappings**
+
+[ *Scope:* All | Optional | *Type:* object | *Default:* null ]
+
+A key => value mapping of server paths. This is great to map docker container paths to host paths. This is required if you wish use `phpcs` inside from a docker image.
+
 ## Diagnosing common errors
 
 ### The phpcs report contains invalid json

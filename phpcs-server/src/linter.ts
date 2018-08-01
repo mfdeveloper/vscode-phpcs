@@ -41,7 +41,6 @@ export class PhpcsLinter {
 	 */
 	static async create(executablePath: string): Promise<PhpcsLinter> {
 		try {
-
 			let result: Buffer = cp.execSync(`"${executablePath}" --version`);
 
 			const versionPattern: RegExp = /^PHP_CodeSniffer version (\d+\.\d+\.\d+)/i;
@@ -73,6 +72,10 @@ export class PhpcsLinter {
 			let noDrivePath = filePath.slice(Math.max(pathRoot.length - 1, 0));
 			filePath = path.join(pathRoot.toUpperCase(), noDrivePath);
 		}
+
+		// Normalize file path for relative from workspaceRoot (great for docker volumes)
+		const regexFile = new RegExp("^\\"+ path.sep );
+		filePath = filePath.replace(workspaceRoot, '').replace(regexFile,'');
 
 		let fileText = document.getText();
 
@@ -193,7 +196,11 @@ export class PhpcsLinter {
 				}
 				throw new Error(error);
 			}
-			throw new Error(strings.format(SR.UnknownExecutionError, `${this.executablePath} ${lintArgs.join(' ')}`));
+
+			if (!/Starting*.*done/.test(stderr)) {
+
+				throw new Error(strings.format(SR.UnknownExecutionError, `${this.executablePath} ${lintArgs.join(' ')}`, stderr));
+			}
 		}
 
 		// Determine whether we have an error in stdout.
@@ -209,7 +216,12 @@ export class PhpcsLinter {
 
 		let messages: Array<PhpcsMessage>;
 		if (filePath !== undefined && semver.gte(this.executableVersion, '2.0.0')) {
-			const fileRealPath = extfs.realpathSync(filePath);
+			let fileRealPath = extfs.realpathSync(filePath);
+
+			if (settings.pathMappings) {
+				fileRealPath = this.replacePathMappings(settings, fileRealPath);
+			}
+
 			if (!data.files[fileRealPath]) {
 				return [];
 			}
@@ -309,5 +321,41 @@ export class PhpcsLinter {
 			pattern = pattern.replace(searchValue, replaceValue);
 		}
 		return mm.isMatch(path, pattern);
+	}
+
+	/**
+	 * Replace path mappings and path workspace variable
+	 * from a settings.json config property
+	 *
+	 * ## Example
+	 *
+	 * ```json
+	  "phpcs.pathMappings": {
+        "/var/www/html/my-folder": "${workspaceFolder}/my-folder"
+      }
+	  ```
+	 *
+	 * @param settings PhpcsSettings A object that contains the key => value mapping defined by [`phpcs.pathMapppings`](#PhpcsSettings.pathMappings)
+	 * @param pathToReplace string A Path that will be replaced by `phpcs.pathMapppings` settings property
+	 * @see [environmentVariablesProvider.ts](https://github.com/Microsoft/vscode-python/blob/master/src/client/common/variables/environmentVariablesProvider.ts)
+	 * 		If you wish implement [vscode variables](https://code.visualstudio.com/docs/editor/variables-reference) replacement for settings properties, in future
+	 */
+	protected replacePathMappings(settings: PhpcsSettings, pathToReplace: string ): string {
+		const regexWorkspace = /(\$\{workspaceFolder\})|(\$\{workspaceRoot\})/;
+		for (const remotePath in settings.pathMappings) {
+			if (settings.pathMappings.hasOwnProperty(remotePath)) {
+
+				let hostPath = settings.pathMappings[remotePath];
+				if (regexWorkspace.test(hostPath)) {
+					hostPath = hostPath.replace(regexWorkspace, settings.workspaceRoot);
+				}
+
+				if (pathToReplace.indexOf(hostPath) != -1) {
+
+					return pathToReplace.replace(hostPath, remotePath);
+				}
+			}
+		}
+		return pathToReplace;
 	}
 }
