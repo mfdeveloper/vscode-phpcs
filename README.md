@@ -20,6 +20,22 @@ If you want to help maintain this project, please contact me.
 - open the cloned repository folder using [Visual Studio Code](https://code.visualstudio.com/)
 - run VS Code task `npm install`
 
+### Install the .vsix package (optional)
+
+If you want test/share this extension from your fork (or just local changes) and install for every vscode instance, you can generate a `.vsix` package and install it. For more information, see: [Packaging extensions](https://code.visualstudio.com/docs/extensions/publish-extension#_packaging-extensions)
+
+- Run the task npm to pack and install this extension
+
+	```bash
+	npm run install:extension
+	```
+
+- For just generate the `.vsix` file, run the npm task `package`:
+
+	```bash
+	npm run package
+	```
+
 ## Run/Debug Development Version
 
 To run the development version of the `phpcs` extension:

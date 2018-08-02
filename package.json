@@ -20,6 +20,7 @@
     "postinstall": "npm-run-all --parallel postinstall:*",
     "postinstall:server": "cd phpcs-server && npm install",
     "postinstall:client": "cd phpcs && npm install",
+    "install:extension": "npm run package && cd ./phpcs && code --install-extension ./out/phpcs-${npm_package_version}.vsix",
     "compile": "npm-run-all --serial clean:* compile:*",
     "compile:server": "cd phpcs-server && npm run installServer && cd .. && tsc -p phpcs-server/tsconfig.json",
     "compile:client": "tsc -p phpcs/tsconfig.json",
@@ -27,7 +28,8 @@
     "watch:client": "tsc -w -p phpcs/tsconfig.json",
     "clean": "npm-run-all --parallel clean:*",
     "clean:server": "cd phpcs-server && npm run clean",
-    "clean:client": "cd phpcs && npm run clean"
+    "clean:client": "cd phpcs && npm run clean",
+    "package": "npm run compile && cd ./phpcs && vsce package -o ./out/phpcs-${npm_package_version}.vsix"
   },
   "devDependencies": {
     "@types/cross-spawn": "6.0.0",
@@ -42,6 +44,7 @@
     "ts-node": "^5.0.0",
     "tslint": "^5.9.1",
     "typescript": "^2.7.2",
-    "typescript-formatter": "^7.1.0"
+    "typescript-formatter": "^7.1.0",
+    "vsce": "^1.44.0"
   }
 }
