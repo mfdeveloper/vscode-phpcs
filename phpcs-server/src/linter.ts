@@ -74,8 +74,17 @@ export class PhpcsLinter {
 		}
 
 		// Normalize file path for relative from workspaceRoot (great for docker volumes)
-		const regexFile = new RegExp("^\\"+ path.sep );
-		filePath = filePath.replace(workspaceRoot, '').replace(regexFile,'');
+		if (settings.pathMappings) {
+			const relativeDir = path.relative(workspaceRoot, path.dirname(filePath));
+			if(this.containsInMappings(settings, relativeDir)) {
+				const regexFile = new RegExp("^\\"+ path.sep );
+				filePath = filePath.replace(workspaceRoot, '').replace(regexFile,'');
+			}
+
+			/* TODO: Needs show a warning that this file is not mapped, if you configure
+					 pathMappings for this project */
+
+		}
 
 		let fileText = document.getText();
 
@@ -357,5 +366,21 @@ export class PhpcsLinter {
 			}
 		}
 		return pathToReplace;
+	}
+
+	protected containsInMappings(settings: PhpcsSettings, filePath: string): boolean {
+
+		for (const remotePath in settings.pathMappings) {
+			if (settings.pathMappings.hasOwnProperty(remotePath)) {
+				const hostPath = settings.pathMappings[remotePath];
+
+				if (new RegExp(filePath).test(hostPath)) {
+					return true;
+				}
+
+			}
+		}
+
+		return false;
 	}
 }
